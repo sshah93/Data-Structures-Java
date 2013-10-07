@@ -1,0 +1,280 @@
+/*CS 284 Assignment 3*/
+
+/* I pledge my honor that I have abided by the Stevens Honor System */
+
+package mypriorityqueue;
+
+import java.io.*;
+
+import java.util.Arrays;
+
+import java.lang.String;
+
+public class MyPriorityQueue 
+{
+
+    private MyMaxHeap theQueue;
+    private static final int INITIAL_CAPACITY = 5;
+    
+    public MyPriorityQueue()
+    {
+        theQueue = new MyMaxHeap();
+    }
+    
+    public MyPriorityQueue(Customer[] arr, int n)
+    {
+        theQueue = new MyMaxHeap(arr, n); 
+    }
+    
+    public boolean offer(Customer cust)
+    {
+        theQueue.add(cust);
+        return true;
+    }
+    
+    public Customer remove()
+    {
+        if(isEmpty() == true)
+        {
+            System.out.println("This is an empty heap!");
+            return null;
+        }
+        
+        Customer removedItem = theQueue.removeMax();
+        System.out.println("The removed element of the heap is: " + removedItem);
+        return removedItem;
+    }
+    
+    public Customer peek()
+    {
+        if(isEmpty() == true)
+        {
+            System.out.println("This is an empty heap!");
+            return null;
+        }
+        
+        Customer topMost = theQueue.peakElement();
+        System.out.println("The root of the heap is: " + topMost);
+        return topMost;
+    }
+    
+    public boolean isEmpty()
+    {
+        if(theQueue.size() == 0)
+        {
+            return true;
+        }
+            
+        return false;
+    }
+    
+    public void showList() //DOUBTFULL +++++++++++++++++++++++++++++++++++++++++
+    {
+        theQueue.showList();
+    }
+    
+    private static class MyMaxHeap
+    {
+        private Customer[] theHeap;
+        private int size = 0;
+        private int capacity;
+        
+        public MyMaxHeap()
+        {
+            size = 0;
+            capacity = 5;
+            theHeap  = new Customer[capacity];
+        }
+        
+        public MyMaxHeap(Customer[] arr, int n) //Need to go over it
+        {
+            theHeap = Arrays.copyOf(arr, n);
+        }
+        
+        public int size()
+        {
+            return size;
+        }
+        
+        public void reallocate()
+        {
+            capacity = 2 * capacity;
+            theHeap = Arrays.copyOf(theHeap, capacity);
+        }
+        
+        public boolean add(Customer cust)
+        {
+            if (size == capacity)
+            {
+                reallocate();
+            }
+            
+            theHeap[size] = cust;            
+            size++;
+            
+            int child = size - 1;
+            int parent = (child - 1) / 2; // Find child’s parent.
+            
+            while (parent >= 0 && (compare(parent,child)) < 0) // Reheap
+            {
+                swap(parent, child);
+                child = parent;
+                parent = (child - 1) / 2;                       
+            }
+            return true;
+        }
+        
+        public Customer peakElement()
+        {
+            if(size == 0)
+            {
+                System.out.println("There are no elements available here!");
+            }
+            
+            Customer temp;
+            temp = theHeap[0];
+            return temp;
+        }
+       
+        public Customer removeMax()
+        {
+            if(size == 0)
+            {
+                System.out.println("There are no elements available here!");
+                return null;
+            }
+            
+            Customer temp;
+            temp = theHeap[0];
+            theHeap[0] = theHeap[size - 1];
+            
+            if (size == 1) 
+            {
+                theHeap[0] = null;
+            }
+    
+            /* Remove the last item from the ArrayList and place it into
+               the first position. */
+    
+            theHeap[size] = null;          // The parent starts at the top.
+            int parent = 0;
+            
+            while (true) 
+            {
+                int leftChild = 2 * parent + 1;
+                
+                if (leftChild >= size()) 
+                {
+                    break; // Out of heap.
+                }
+
+                int rightChild = leftChild + 1;
+                
+                int minChild = leftChild; // Assume leftChild is smaller.
+                // See whether rightChild is smaller.
+
+                if (rightChild < size() && compare(leftChild,rightChild) < 0) 
+                {
+                    minChild = rightChild;
+                }
+                // assert: minChild is the index of the smaller child.
+                // Move smaller child up heap if necessary.
+
+                if (compare(parent, minChild) < 0) 
+                {
+                    swap(parent, minChild);
+                    parent = minChild;
+                }
+
+                else 
+                { // Heap property is restored.
+                    break;
+                }
+            }
+            
+            size--;
+            return temp;
+        }
+        
+        public void showList() ///might not work ++++++++++++++++++++++++++++++++++++++++++++++++++
+        {
+            for(int i=0; i<size; i++)
+            {
+                double j = theHeap[i].priority;
+                System.out.println("Customer: " + theHeap[i].name + "Priority: " + j + "\n");
+            }    
+            //System.out.println(Arrays.toString(theHeap)); //Another way to print the array out. 
+        }
+        
+        private void swap(int i, int j)
+        {
+            Customer temp = theHeap[i];
+            theHeap[i] = theHeap[j];
+            theHeap[j] = temp;            
+        }
+        
+        private int compare(int i, int j)
+        {
+            if (theHeap[i].priority > theHeap[j].priority)
+            {
+                return 1;
+            }
+            
+            else if(theHeap[i].priority == theHeap[j].priority)
+            {
+                return 0;
+            }
+            
+            else 
+            {
+                return -1;
+            }
+        }
+    }
+    
+    private static class Customer
+    {
+        public String name;
+        public int salary;
+        public int nrCars;
+        public int nrHouses;
+        public double priority;
+        
+        public Customer(String nam, int sal, int cars, int houses)
+        {
+            name = nam;
+            salary = sal;
+            nrCars = cars;
+            nrHouses = houses;
+            priority = (salary/1000) + (nrCars*10) + (nrHouses*50);
+        }
+    }
+    
+    public static void main(String[] args) 
+    {
+        MyPriorityQueue test = new MyPriorityQueue();
+          
+        try
+        {
+            BufferedReader in= new BufferedReader(new FileReader(new File("Priority.txt")));
+            
+            for(String x= in.readLine();x!=null;x=in.readLine())
+            {
+                String[] result = x.split("\\|");
+                            
+                while(result[0].length()!=0)
+                {
+                    Customer cust = new Customer(result[0], Integer.parseInt(result[1]), Integer.parseInt(result[2]), Integer.parseInt(result[3])); 
+                    test.offer(cust);
+                }
+            }            
+        }  
+        catch(IOException e)
+        {
+            System.out.println("File I/O error");
+            System.exit(1);
+        }        
+      test.showList();  
+    }
+}
+
